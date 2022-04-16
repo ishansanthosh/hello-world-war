@@ -1,20 +1,38 @@
 pipeline {
-    agent any
-    stages {
-        stage('checkout') { 
+    agent any    
+   // environment {
+   // DOCKERHUB_CREDENTIALS = credentials('dockerpswd')
+  //  }
+   stages {
+        stage('Checkout') { 
             steps {
+	      sh "rm -rf hello-world-war"
               sh "git clone https://github.com/ishansanthosh/hello-world-war"
             }
-        }
-stage('build') { 
-            steps {
-              sh "mvn clean package"
-            }
-        }  
-        stage('deploy') {
-            steps {            
-          sh "cp /var/lib/jenkins/workspace/pipeline/target/hello-world-war-1.0.0.war /opt/apache-tomcat-9.0.60/webapps/"
-            }
-        }
-        }
-        }
+        }       
+
+stage('Build'){
+	steps{
+	//sh "cp /home/ubuntu/Dockerfile /var/lib/jenkins/workspace/cicd"
+	sh "cd /var/lib/jenkins/workspace/cicd"
+	sh "docker build -t build_cicd:1.0 ."
+    	}
+}
+stage('Docker hub login and publish'){
+	steps{
+	//sh "eho $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+	sh "docker login -u ishansanthosh -p Santhu1987"
+	sh "docker tag build_cicd:1.0 ishansanthosh/cicdpipeline:1.0"
+	sh "docker push ishansanthosh/cicdpipeline:1.0"
+	}
+}
+ stage('Pull and Deploy') {  
+  agent { label 'tomcat' }
+        steps {
+        sh "docker pull ishansanthosh/cicdpipeline:1.0"
+       // sh "docker rm -f por"
+        sh "docker run -d -p 8090:8080 --name por ishansanthosh/cicdpipeline:1.0"
+             } 
+}    	   
+   }
+}
