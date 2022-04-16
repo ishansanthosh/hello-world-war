@@ -27,7 +27,7 @@ stage('Docker hub login and publish'){
 	}
 }
  stage('Pull and Deploy') {  
-  agent { label 'tomcat' }
+ // agent { label 'tomcat' }
         steps {
         sh "docker pull ishansanthosh/cicdpipeline:1.0"
        // sh "docker rm -f por"
